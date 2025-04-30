@@ -1,103 +1,168 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { useEffect, useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { DataTable } from "@/components/data-table"
+import { columns } from "@/components/columns"
+import { AgeDistributionChart } from "@/components/age-distribution-chart"
+import { GenderDistributionChart } from "@/components/gender-distribution-chart"
+import { NationalityDistributionChart } from "@/components/nationality-distribution-chart"
+import type { UserData } from "@/types/user-data"
+import type { FieldTemplate } from "@/types/field-template"
+import { FieldTemplatesTable } from "@/components/field-templates-table"
+
+export default function Dashboard() {
+  const [userData, setUserData] = useState<UserData[]>([])
+  const [fieldTemplates, setFieldTemplates] = useState<FieldTemplate[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isTemplatesLoading, setIsTemplatesLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        // Replace with your actual API endpoint
+        const response = await fetch("http://localhost:3001/cccd-info")
+        const data = await response.json()
+        setUserData(data)
+      } catch (error) {
+        console.error("Error fetching user data:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    const fetchTemplates = async () => {
+      try {
+        setIsTemplatesLoading(true)
+        const response = await fetch("http://localhost:3001/field-template")
+        const data = await response.json()
+        setFieldTemplates(data)
+      } catch (error) {
+        console.error("Error fetching field templates:", error)
+      } finally {
+        setIsTemplatesLoading(false)
+      }
+    }
+
+    fetchData()
+    fetchTemplates()
+  }, [])
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="container mx-auto py-10">
+      <h1 className="text-3xl font-bold mb-6">Bảng Điều Khiển</h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      <Tabs defaultValue="table" className="w-full">
+        <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
+          <TabsTrigger value="table" className="cursor-pointer">
+            Thông tin CCCD
+          </TabsTrigger>
+          <TabsTrigger value="statistics" className="cursor-pointer">
+            Thống Kê
+          </TabsTrigger>
+          <TabsTrigger value="templates" className="cursor-pointer">
+            Mẫu thông tin cá nhân
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="table" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Dữ Liệu Thông Tin CCCD</CardTitle>
+              <CardDescription>Danh sách đầy đủ các bản ghi CCCD trong hệ thống.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex justify-center items-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                </div>
+              ) : (
+                <DataTable columns={columns} data={userData} />
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="statistics" className="space-y-4">
+          <div className="grid grid-cols-1 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Phân Bố Độ Tuổi</CardTitle>
+                <CardDescription>Phân bố người dùng theo nhóm tuổi</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-2 pb-6">
+                {isLoading ? (
+                  <div className="flex justify-center items-center h-[300px]">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                  </div>
+                ) : (
+                  <div className="h-[300px] w-full">
+                    <AgeDistributionChart data={userData} />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Phân Bố Giới Tính</CardTitle>
+                  <CardDescription>Phân bố người dùng theo giới tính</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-2 pb-6">
+                  {isLoading ? (
+                    <div className="flex justify-center items-center h-[300px]">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                    </div>
+                  ) : (
+                    <div className="h-[300px] w-full">
+                      <GenderDistributionChart data={userData} />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Phân Bố Quốc Tịch</CardTitle>
+                  <CardDescription>Top 10 quốc tịch</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-2 pb-6">
+                  {isLoading ? (
+                    <div className="flex justify-center items-center h-[300px]">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                    </div>
+                  ) : (
+                    <div className="h-[300px] w-full">
+                      <NationalityDistributionChart data={userData} />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="templates" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Mẫu Biểu</CardTitle>
+              <CardDescription>Quản lý các mẫu biểu cho biểu mẫu và tài liệu của bạn</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isTemplatesLoading ? (
+                <div className="flex justify-center items-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                </div>
+              ) : (
+                <FieldTemplatesTable data={fieldTemplates} onUpdate={setFieldTemplates} />
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
-  );
+  )
 }
