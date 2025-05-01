@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import type { FieldTemplate } from "@/types/field-template"
 
 // Mock data for field templates
-const mockFieldTemplates: FieldTemplate[] = [
+const fieldTemplates: FieldTemplate[] = [
   {
     id: "1",
     field_name: "name",
@@ -114,9 +114,35 @@ const mockFieldTemplates: FieldTemplate[] = [
 ]
 
 
-export async function GET() {
-  // Simulate API delay 
-  await new Promise((resolve) => setTimeout(resolve, 500))
+// export async function GET() {
+//   // Simulate API delay 
+//   await new Promise((resolve) => setTimeout(resolve, 500))
 
-  return NextResponse.json(mockFieldTemplates)
+//   return NextResponse.json(mockFieldTemplates)
+// }
+
+// GET all field templates
+export async function GET() {
+  // Simulate API delay
+  await new Promise((resolve) => setTimeout(resolve, 500))
+  return NextResponse.json(fieldTemplates)
+}
+
+// POST - Create a new field template
+export async function POST(request: Request) {
+  try {
+    const newTemplate = await request.json()
+
+    // Validate required fields
+    if (!newTemplate.field_name || !newTemplate.label || !newTemplate.type) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    }
+    console.log(newTemplate)
+    // Add the new template
+    fieldTemplates.push(newTemplate)
+
+    return NextResponse.json(newTemplate, { status: 201 })
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to create template" }, { status: 500 })
+  }
 }

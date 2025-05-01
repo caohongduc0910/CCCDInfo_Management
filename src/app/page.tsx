@@ -11,42 +11,53 @@ import { NationalityDistributionChart } from "@/components/nationality-distribut
 import type { UserData } from "@/types/user-data"
 import type { FieldTemplate } from "@/types/field-template"
 import { FieldTemplatesTable } from "@/components/field-templates-table"
+import { Toaster } from "@/components/ui/toast"
+import { fieldTemplatesApi, userDataApi } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 export default function Dashboard() {
   const [userData, setUserData] = useState<UserData[]>([])
   const [fieldTemplates, setFieldTemplates] = useState<FieldTemplate[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isTemplatesLoading, setIsTemplatesLoading] = useState(true)
+  const { toast } = useToast()
+
+  const fetchUserData = async () => {
+    try {
+      setIsLoading(true)
+      const data = await userDataApi.getAll()
+      setUserData(data)
+    } catch (error) {
+      console.error("Error fetching user data:", error)
+      toast({
+        title: "Lỗi",
+        description: "Không thể tải dữ liệu người dùng. Vui lòng thử lại sau.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const fetchTemplates = async () => {
+    try {
+      setIsTemplatesLoading(true)
+      const data = await fieldTemplatesApi.getAll()
+      setFieldTemplates(data)
+    } catch (error) {
+      console.error("Error fetching field templates:", error)
+      toast({
+        title: "Lỗi",
+        description: "Không thể tải mẫu biểu. Vui lòng thử lại sau.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsTemplatesLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true)
-        // Replace with your actual API endpoint
-        const response = await fetch("http://localhost:3001/cccd-info")
-        const data = await response.json()
-        setUserData(data)
-      } catch (error) {
-        console.error("Error fetching user data:", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    const fetchTemplates = async () => {
-      try {
-        setIsTemplatesLoading(true)
-        const response = await fetch("http://localhost:3001/field-template")
-        const data = await response.json()
-        setFieldTemplates(data)
-      } catch (error) {
-        console.error("Error fetching field templates:", error)
-      } finally {
-        setIsTemplatesLoading(false)
-      }
-    }
-
-    fetchData()
+    fetchUserData()
     fetchTemplates()
   }, [])
 
@@ -57,21 +68,21 @@ export default function Dashboard() {
       <Tabs defaultValue="table" className="w-full">
         <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
           <TabsTrigger value="table" className="cursor-pointer">
-            Thông tin CCCD
+            Dữ Liệu
           </TabsTrigger>
           <TabsTrigger value="statistics" className="cursor-pointer">
             Thống Kê
           </TabsTrigger>
           <TabsTrigger value="templates" className="cursor-pointer">
-            Mẫu thông tin cá nhân
+            Mẫu Biểu
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="table" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Dữ Liệu Thông Tin CCCD</CardTitle>
-              <CardDescription>Danh sách đầy đủ các bản ghi CCCD trong hệ thống.</CardDescription>
+              <CardTitle>Dữ Liệu Người Dùng</CardTitle>
+              <CardDescription>Danh sách đầy đủ các bản ghi người dùng trong hệ thống.</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -157,12 +168,14 @@ export default function Dashboard() {
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                 </div>
               ) : (
-                <FieldTemplatesTable data={fieldTemplates} onUpdate={setFieldTemplates} />
+                <FieldTemplatesTable data={fieldTemplates} onUpdate={setFieldTemplates} onRefresh={fetchTemplates} />
               )}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Toaster />
     </div>
   )
 }

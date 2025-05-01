@@ -23,23 +23,29 @@ interface FieldTemplateDialogProps {
   onOpenChange: (open: boolean) => void
   template: FieldTemplate | null
   onSave: (template: FieldTemplate) => void
+  isLoading?: boolean
 }
 
 const fieldTypes = [
-  { value: "text", label: "Văn bản" },
-  { value: "textarea", label: "Văn bản dài" },
-  { value: "number", label: "Số" },
-  { value: "date", label: "Ngày tháng" },
-  { value: "email", label: "Email" },
-  { value: "tel", label: "Điện thoại" },
-  { value: "select", label: "Lựa chọn" },
-  { value: "checkbox", label: "Hộp kiểm" },
-  { value: "radio", label: "Nút radio" },
-  { value: "image", label: "Hình ảnh" },
-  { value: "signature", label: "Chữ ký" },
+  { value: "varchar", label: "varchar" },
+  { value: "int", label: "int" },
+  { value: "float", label: "float" },
+  { value: "boolean", label: "boolean" },
+  { value: "date", label: "date" },
+  { value: "datetime", label: "datetime" },
+  { value: "text", label: "text" },
+  { value: "json", label: "json" },
+  { value: "blob", label: "blob" },
+  { value: "timestamp", label: "timestamp" }
 ]
 
-export function FieldTemplateDialog({ open, onOpenChange, template, onSave }: FieldTemplateDialogProps) {
+export function FieldTemplateDialog({
+  open,
+  onOpenChange,
+  template,
+  onSave,
+  isLoading = false,
+}: FieldTemplateDialogProps) {
   const [formData, setFormData] = useState<FieldTemplate>({
     id: "",
     field_name: "",
@@ -60,7 +66,7 @@ export function FieldTemplateDialog({ open, onOpenChange, template, onSave }: Fi
       setFormData(template)
     } else {
       setFormData({
-        id: crypto.randomUUID(),
+        id: "",
         field_name: "",
         label: "",
         type: "text",
@@ -97,11 +103,17 @@ export function FieldTemplateDialog({ open, onOpenChange, template, onSave }: Fi
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onSave(formData)
-    onOpenChange(false)
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(newOpen) => {
+        if (!isLoading) {
+          onOpenChange(newOpen)
+        }
+      }}
+    >
       <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
@@ -121,6 +133,7 @@ export function FieldTemplateDialog({ open, onOpenChange, template, onSave }: Fi
                 onChange={(e) => handleChange("field_name", e.target.value)}
                 className="col-span-3"
                 required
+                disabled={isLoading}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -133,13 +146,14 @@ export function FieldTemplateDialog({ open, onOpenChange, template, onSave }: Fi
                 onChange={(e) => handleChange("label", e.target.value)}
                 className="col-span-3"
                 required
+                disabled={isLoading}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="type" className="text-right">
                 Loại
               </Label>
-              <Select value={formData.type} onValueChange={(value) => handleChange("type", value)}>
+              <Select value={formData.type} onValueChange={(value) => handleChange("type", value)} disabled={isLoading}>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Chọn loại trường" />
                 </SelectTrigger>
@@ -162,6 +176,7 @@ export function FieldTemplateDialog({ open, onOpenChange, template, onSave }: Fi
                 onChange={(e) => handleChange("regex", e.target.value)}
                 className="col-span-3"
                 placeholder="Ví dụ: ^[A-Za-z0-9]+$"
+                disabled={isLoading}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -173,6 +188,7 @@ export function FieldTemplateDialog({ open, onOpenChange, template, onSave }: Fi
                   id="required"
                   checked={formData.required}
                   onCheckedChange={(checked) => handleChange("required", !!checked)}
+                  disabled={isLoading}
                 />
                 <label
                   htmlFor="required"
@@ -195,6 +211,7 @@ export function FieldTemplateDialog({ open, onOpenChange, template, onSave }: Fi
                     value={formData.region.x}
                     onChange={(e) => handleRegionChange("x", e.target.value)}
                     className="mt-1"
+                    disabled={isLoading}
                   />
                 </div>
                 <div>
@@ -207,6 +224,7 @@ export function FieldTemplateDialog({ open, onOpenChange, template, onSave }: Fi
                     value={formData.region.y}
                     onChange={(e) => handleRegionChange("y", e.target.value)}
                     className="mt-1"
+                    disabled={isLoading}
                   />
                 </div>
                 <div>
@@ -219,6 +237,7 @@ export function FieldTemplateDialog({ open, onOpenChange, template, onSave }: Fi
                     value={formData.region.width}
                     onChange={(e) => handleRegionChange("width", e.target.value)}
                     className="mt-1"
+                    disabled={isLoading}
                   />
                 </div>
                 <div>
@@ -231,13 +250,16 @@ export function FieldTemplateDialog({ open, onOpenChange, template, onSave }: Fi
                     value={formData.region.height}
                     onChange={(e) => handleRegionChange("height", e.target.value)}
                     className="mt-1"
+                    disabled={isLoading}
                   />
                 </div>
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit">{template ? "Lưu thay đổi" : "Thêm mẫu"}</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Đang xử lý..." : template ? "Lưu thay đổi" : "Thêm mẫu"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
